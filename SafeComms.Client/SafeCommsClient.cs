@@ -16,7 +16,7 @@ public class SafeCommsClient
     /// </summary>
     /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="baseUrl">The base URL of the API.</param>
-    public SafeCommsClient(string apiKey, string baseUrl = "https://safecomms.dev/api/v1/public")
+    public SafeCommsClient(string apiKey, string baseUrl = "https://api.safecomms.dev")
     {
         _baseUrl = baseUrl.TrimEnd('/');
         _httpClient = new HttpClient();
