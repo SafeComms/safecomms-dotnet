@@ -52,6 +52,53 @@ public class SafeCommsClient
     }
 
     /// <summary>
+    /// Moderates the provided image content.
+    /// </summary>
+    /// <param name="image">The image URL or base64 string to moderate.</param>
+    /// <param name="language">The language of the content (default: "en").</param>
+    /// <param name="moderationProfileId">The ID of the moderation profile to use.</param>
+    /// <returns>The moderation result.</returns>
+    public async Task<JsonElement> ModerateImageAsync(string image, string language = "en", string? moderationProfileId = null)
+    {
+        var request = new
+        {
+            image,
+            language,
+            moderationProfileId
+        };
+
+        var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/moderation/image", request);
+        response.EnsureSuccessStatusCode();
+        
+        return await response.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
+    /// <summary>
+    /// Moderates the provided image file.
+    /// </summary>
+    /// <param name="fileStream">The stream of the image file.</param>
+    /// <param name="fileName">The name of the image file.</param>
+    /// <param name="language">The language of the content (default: "en").</param>
+    /// <param name="moderationProfileId">The ID of the moderation profile to use.</param>
+    /// <returns>The moderation result.</returns>
+    public async Task<JsonElement> ModerateImageFileAsync(Stream fileStream, string fileName, string language = "en", string? moderationProfileId = null)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(fileStream), "image", fileName);
+        content.Add(new StringContent(language), "language");
+        
+        if (!string.IsNullOrEmpty(moderationProfileId))
+        {
+            content.Add(new StringContent(moderationProfileId), "moderationProfileId");
+        }
+
+        var response = await _httpClient.PostAsync($"{_baseUrl}/moderation/image/upload", content);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
+    /// <summary>
     /// Retrieves the current usage statistics.
     /// </summary>
     /// <returns>The usage statistics.</returns>
