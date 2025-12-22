@@ -57,14 +57,20 @@ public class SafeCommsClient
     /// <param name="image">The image URL or base64 string to moderate.</param>
     /// <param name="language">The language of the content (default: "en").</param>
     /// <param name="moderationProfileId">The ID of the moderation profile to use.</param>
+    /// <param name="enableOcr">Whether to extract text (OCR) from the image.</param>
+    /// <param name="enhancedOcr">Whether to use enhanced OCR for higher accuracy.</param>
+    /// <param name="extractMetadata">Whether to extract metadata (EXIF) from the image.</param>
     /// <returns>The moderation result.</returns>
-    public async Task<JsonElement> ModerateImageAsync(string image, string language = "en", string? moderationProfileId = null)
+    public async Task<JsonElement> ModerateImageAsync(string image, string language = "en", string? moderationProfileId = null, bool enableOcr = false, bool enhancedOcr = false, bool extractMetadata = false)
     {
         var request = new
         {
             image,
             language,
-            moderationProfileId
+            moderationProfileId,
+            enableOcr,
+            enhancedOcr,
+            extractMetadata
         };
 
         var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/moderation/image", request);
@@ -80,12 +86,18 @@ public class SafeCommsClient
     /// <param name="fileName">The name of the image file.</param>
     /// <param name="language">The language of the content (default: "en").</param>
     /// <param name="moderationProfileId">The ID of the moderation profile to use.</param>
+    /// <param name="enableOcr">Whether to extract text (OCR) from the image.</param>
+    /// <param name="enhancedOcr">Whether to use enhanced OCR for higher accuracy.</param>
+    /// <param name="extractMetadata">Whether to extract metadata (EXIF) from the image.</param>
     /// <returns>The moderation result.</returns>
-    public async Task<JsonElement> ModerateImageFileAsync(Stream fileStream, string fileName, string language = "en", string? moderationProfileId = null)
+    public async Task<JsonElement> ModerateImageFileAsync(Stream fileStream, string fileName, string language = "en", string? moderationProfileId = null, bool enableOcr = false, bool enhancedOcr = false, bool extractMetadata = false)
     {
         using var content = new MultipartFormDataContent();
         content.Add(new StreamContent(fileStream), "image", fileName);
         content.Add(new StringContent(language), "language");
+        content.Add(new StringContent(enableOcr.ToString().ToLower()), "enableOcr");
+        content.Add(new StringContent(enhancedOcr.ToString().ToLower()), "enhancedOcr");
+        content.Add(new StringContent(extractMetadata.ToString().ToLower()), "extractMetadata");
         
         if (!string.IsNullOrEmpty(moderationProfileId))
         {
